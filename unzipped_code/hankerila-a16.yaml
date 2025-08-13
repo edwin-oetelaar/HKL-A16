@@ -1,0 +1,402 @@
+esphome:
+  name: hankerila-a16
+  friendly_name: HANKERILA-A16
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "IZ+mIARFTIw3dcAfIftPaBKqi2sTuRszpVtVpMyj4MA="
+
+ota:
+  password: "e8c2b2df5b2891205032eb94434d9d82"
+
+# Example configuration entry for RMII chips
+ethernet:  # Ethernet configuration section
+  type: LAN8720  # The type of the Ethernet controller is LAN8720
+  mdc_pin: GPIO23  # Define the MDC (Management Data Clock) pin as GPIO23
+  mdio_pin: GPIO18  # Define the MDIO (Management Data Input/Output) pin as GPIO18
+  clk_mode: GPIO17_OUT  # The clock mode pin is GPIO17 and it's in output mode
+  phy_addr: 0  # The address of the Ethernet PHY (Physical Layer)
+
+  # Optional manual IP  # Optional manual IP configuration
+  manual_ip:
+    static_ip: 192.168.50.190  # The static IP address
+    gateway: 192.168.50.1  # The gateway address
+    subnet: 255.255.255.0  # The subnet mask
+
+mqtt:  # MQTT configuration section
+  broker: 192.168.50.88  # The MQTT broker address
+  username: mqtt  # The username for MQTT
+  password: 123  # The password for MQTT
+  # Turn on the relay01
+  on_message:
+     - topic: turn_on_relay01/topic  # The topic for turning on the relay01
+       then:  
+        - switch.turn_on: relay01  # The action to turn on the relay01
+     - topic: turn_off_relay01/topic  # The topic for turning off the relay01
+       then:  
+        - switch.turn_off: relay01  # The action to turn off the relay01
+# DS18B20 TEMPERATURE SENSOR DETECT
+dallas:
+  - pin: GPIO32
+    id: hub_1
+  - pin: GPIO33
+    id: hub_2
+  - pin: GPIO14
+    id: hub_3
+
+sensor:
+  #2 Temperature sensor output
+  - platform: dallas
+    address: 0xbe012115dcbebc28
+    dallas_id: hub_1
+    name: "Temperature_01"
+  - platform: dallas
+    address: 0xc00358d443b5ae28
+    dallas_id: hub_2
+    name: "Temperature_02"
+  - platform: dallas
+    address: 0xc00358d443b5ae29
+    dallas_id: hub_3
+    name: "Temperature_02"
+  #4 Analog inputs detect 
+  - platform: adc
+    pin: GPIO36
+    name: "Analog_01"
+    raw: True
+    attenuation: 11db
+    filters:
+      - multiply:  0.001221 # 5.0/4095, for attenuation 11db
+    update_interval: 3s
+    
+  - platform: adc
+    pin: GPIO34
+    name: "Analog_02"
+    raw: True
+    attenuation: 11db
+    filters:
+      - multiply: 0.001221 # 5.0/4095, for attenuation 11db
+    update_interval: 3s
+
+  - platform: adc
+    pin: GPIO35
+    name: "Analog_03"
+    raw: True
+    attenuation: 11db
+    filters:
+      - multiply: 0.001221 # 5.0/4095, for attenuation 11db
+    update_interval: 3s
+
+  - platform: adc
+    pin: GPIO39
+    name: "Analog_04"
+    raw: True
+    attenuation: 11db
+    filters:
+      - multiply: 0.001221 # 5.0/4095, for attenuation 11db
+    update_interval: 3s
+ 
+#I2C bus define
+i2c:
+  sda: 4
+  scl: 5
+  scan: true
+  id: bus_a
+      
+uart:
+  - id: 'UART_RS485'
+    tx_pin: GPIO13    
+    rx_pin: GPIO16
+    baud_rate: 9600 
+
+# set the RS232/RS485 UART as a button
+button:   
+  - platform: uart
+    uart_id: UART_RS485
+    name: "RS485 send message"
+    data: 'RS485DataToSend'   #when press the button send string"DataToSend"
+
+pcf8574:
+    # relay output control
+  - id: 'pcf8574_hub_out_1'  
+    address: 0x24
+  - id: 'pcf8574_hub_out_2'  
+    address: 0x25
+    # digital input 
+  - id: 'pcf8574_hub_in_1'  
+    address: 0x22
+  - id: 'pcf8574_hub_in_2'  
+    address: 0x21   
+
+switch:
+  - platform: gpio
+    name: "light1"
+    id: 'relay01'
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      # set pin number
+      number: 0
+      # set pinMode
+      mode: OUTPUT
+      inverted: true
+      
+
+  - platform: gpio
+    name: "light2"
+    id: 'relay02'
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 1
+      mode: OUTPUT
+      inverted: true
+      
+  - platform: gpio
+    name: "light3"
+    id: 'relay03'
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 2
+      mode: OUTPUT
+      inverted: true
+      
+  - platform: gpio
+    name: "light4"
+    id: 'relay04'
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 3
+      mode: OUTPUT
+      inverted: true
+      
+  - platform: gpio
+    name: "light5"
+    id: 'relay05'
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 4
+      mode: OUTPUT
+      inverted: true
+      
+  - platform: gpio
+    name: "light6"
+    id: 'relay06'
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 5
+      mode: OUTPUT
+      inverted: true
+  
+  - platform: gpio
+    name: "light7"
+    id: 'relay07'
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 6
+      mode: OUTPUT
+      inverted: true
+  
+  - platform: gpio
+    name: "light8"
+    id: 'relay08'
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 7
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "light9"
+    id: 'relay09'
+    pin:
+      pcf8574: pcf8574_hub_out_2
+      number: 0
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "light10"
+    id: 'relay10'
+    pin:
+      pcf8574: pcf8574_hub_out_2
+      number: 1
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "light11"
+    id: 'relay11'
+    pin:
+      pcf8574: pcf8574_hub_out_2
+      number: 2
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "light12"
+    id: 'relay12'
+    pin:
+      pcf8574: pcf8574_hub_out_2
+      number: 3
+      mode: OUTPUT
+      inverted: True
+
+  - platform: gpio
+    name: "light13"
+    id: 'relay13'
+    pin:
+      pcf8574: pcf8574_hub_out_2
+      number: 4
+      mode: OUTPUT
+      inverted: true
+  
+  - platform: gpio
+    name: "light14"
+    id: 'relay14'
+    pin:
+      pcf8574: pcf8574_hub_out_2
+      number: 5
+      mode: OUTPUT
+      inverted: true
+  
+  - platform: gpio
+    name: "light15"
+    id: 'relay15'
+    pin:
+      pcf8574: pcf8574_hub_out_2
+      number: 6
+      mode: OUTPUT
+      inverted: true
+  
+  - platform: gpio
+    name: "light16"
+    id: 'relay16'
+    pin:
+      pcf8574: pcf8574_hub_out_2
+      number: 7
+      mode: OUTPUT
+      inverted: true
+
+
+#6 digital input detect
+binary_sensor:
+  - platform: gpio
+    name: "INPUT_01"
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 0
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_02"
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 1
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_03"
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 2
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_04"
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 3
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_05"
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 4
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_06"
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 5
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_07"
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 6
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_08"
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 7
+      mode: input
+      inverted: true
+
+  - platform: gpio
+    name: "INPUT_09"
+    pin:
+      pcf8574: pcf8574_hub_in_2
+      number: 0
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_10"
+    pin:
+      pcf8574: pcf8574_hub_in_2
+      number: 1
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_11"
+    pin:
+      pcf8574: pcf8574_hub_in_2
+      number: 2
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_12"
+    pin:
+      pcf8574: pcf8574_hub_in_2
+      number: 3
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_13"
+    pin:
+      pcf8574: pcf8574_hub_in_2
+      number: 4
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_14"
+    pin:
+      pcf8574: pcf8574_hub_in_2
+      number: 5
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_15"
+    pin:
+      pcf8574: pcf8574_hub_in_2
+      number: 6
+      mode: input
+      inverted: true
+  - platform: gpio
+    name: "INPUT_16"
+    pin:
+      pcf8574: pcf8574_hub_in_2
+      number: 7
+      mode: input
+      inverted: true
